@@ -1,4 +1,4 @@
-# Leung-Malik (LM) filter_bank 
+# Leung-Malik (LM) filter bank 
 Python code for generating Leung-Malik (LM) filter bank that is typically used in texture analysis and classification.
 
 ## Filter Bank Output:
