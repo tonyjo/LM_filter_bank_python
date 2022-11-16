@@ -9,8 +9,7 @@ Reference: http://www.robots.ox.ac.uk/~vgg/research/texclass/filters.html
 '''
 
 import numpy as np
-import cv2
-import matplotlib.pyplot as plt
+
 
 def gaussian1d(sigma, mean, x, ord):
     x = np.array(x)
@@ -24,7 +23,7 @@ def gaussian1d(sigma, mean, x, ord):
         g = g1
         return g
     elif ord == 1:
-        g = -g1*((x_)/(var))
+        g = -g1*(x_/var)
         return g
     else:
         g = g1*(((x_*x_) - var)/(var**2))
@@ -33,33 +32,39 @@ def gaussian1d(sigma, mean, x, ord):
 def gaussian2d(sup, scales):
     var = scales * scales
     shape = (sup,sup)
-    n,m = [(i - 1)/2 for i in shape]
-    x,y = np.ogrid[-m:m+1,-n:n+1]
+    n, m = [(i - 1)/2 for i in shape]
+    x, y = np.ogrid[-m:m+1,-n:n+1]
     g = (1/np.sqrt(2*np.pi*var))*np.exp( -(x*x + y*y) / (2*var) )
     return g
 
 def log2d(sup, scales):
     var = scales * scales
     shape = (sup,sup)
-    n,m = [(i - 1)/2 for i in shape]
-    x,y = np.ogrid[-m:m+1,-n:n+1]
-    g = (1/np.sqrt(2*np.pi*var))*np.exp( -(x*x + y*y) / (2*var) )
+    n, m = [(i - 1)/2 for i in shape]
+    x, y = np.ogrid[-m:m+1,-n:n+1]
+    g = (1/np.sqrt(2*np.pi*var))*np.exp(-(x*x + y*y) / (2*var))
     h = g*((x*x + y*y) - var)/(var**2)
     return h
 
+def normalise(f):
+    f = f - np.mean(f)
+    f = f / np.sum(np.abs(f))
+    return f
+
 def makefilter(scale, phasex, phasey, pts, sup):
 
-    gx = gaussian1d(3*scale, 0, pts[0,...], phasex)
-    gy = gaussian1d(scale,   0, pts[1,...], phasey)
+    gx = gaussian1d(3*scale, 0, pts[0, ...], phasex)
+    gy = gaussian1d(scale,   0, pts[1, ...], phasey)
 
-    image = gx*gy
+    f = gx*gy
 
-    image = np.reshape(image,(sup,sup))
-    return image
+    f = np.reshape(f, (sup, sup))
+    f = normalise(f)
+    return f
 
 def makeLMfilters():
     sup     = 49
-    scalex  = np.sqrt(2) * np.array([1,2,3])
+    scalex  = np.sqrt(2) ** np.array([1,2,3])
     norient = 6
     nrotinv = 12
 
@@ -70,9 +75,10 @@ def makeLMfilters():
     hsup  = (sup - 1)/2
 
     x = [np.arange(-hsup,hsup+1)]
-    y = [np.arange(-hsup,hsup+1)]
+    # y = [np.arange(-hsup,hsup+1)]
+    y = [np.arange(hsup, -hsup - 1, -1)]
 
-    [x,y] = np.meshgrid(x,y)
+    [x, y] = np.meshgrid(x,y)
 
     orgpts = [x.flatten(), y.flatten()]
     orgpts = np.array(orgpts)
@@ -83,15 +89,15 @@ def makeLMfilters():
             angle = (np.pi * orient)/norient
             c = np.cos(angle)
             s = np.sin(angle)
-            rotpts = [[c+0,-s+0],[s+0,c+0]]
+            rotpts = [[c+0, -s+0], [s+0, c+0]]
             rotpts = np.array(rotpts)
             rotpts = np.dot(rotpts,orgpts)
-            F[:,:,count] = makefilter(scalex[scale], 0, 1, rotpts, sup)
-            F[:,:,count+nedge] = makefilter(scalex[scale], 0, 2, rotpts, sup)
+            F[:, :, count] = makefilter(scalex[scale], 0, 1, rotpts, sup)
+            F[:, :, count+nedge] = makefilter(scalex[scale], 0, 2, rotpts, sup)
             count = count + 1
 
     count = nbar+nedge
-    scales = np.sqrt(2) * np.array([1,2,3,4])
+    scales = np.sqrt(2) ** np.array([1,2,3,4])
 
     for i in range(len(scales)):
         F[:,:,count]   = gaussian2d(sup, scales[i])
@@ -109,4 +115,4 @@ def makeLMfilters():
 
 # Call the make filter function
 F = makeLMfilters()
-print F.shape
+print(F.shape)
