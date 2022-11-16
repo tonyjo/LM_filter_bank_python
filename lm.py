@@ -89,30 +89,25 @@ def makeLMfilters():
             angle = (np.pi * orient)/norient
             c = np.cos(angle)
             s = np.sin(angle)
-            rotpts = [[c+0, -s+0], [s+0, c+0]]
-            rotpts = np.array(rotpts)
-            rotpts = np.dot(rotpts,orgpts)
+            rotmtx = np.array([[c, -s], [s, c]])
+            rotpts = np.dot(rotmtx, orgpts)
             F[:, :, count] = makefilter(scalex[scale], 0, 1, rotpts, sup)
             F[:, :, count+nedge] = makefilter(scalex[scale], 0, 2, rotpts, sup)
             count = count + 1
 
-    count = nbar+nedge
-    scales = np.sqrt(2) ** np.array([1,2,3,4])
+    count = nbar + nedge
+    scales = np.sqrt(2) ** np.array([1, 2, 3, 4])
 
     for i in range(len(scales)):
-        F[:,:,count]   = gaussian2d(sup, scales[i])
-        count = count + 1
-
-    for i in range(len(scales)):
-        F[:,:,count] = log2d(sup, scales[i])
-        count = count + 1
-
-    for i in range(len(scales)):
-        F[:,:,count] = log2d(sup, 3*scales[i])
-        count = count + 1
+        F[:, :, count]   = gaussian2d(sup, scales[i])
+        F[:, :, count] = log2d(sup, scales[i])
+        F[:, :, count] = log2d(sup, 3 * scales[i])
+        count = count + 3
 
     return F
 
+
 # Call the make filter function
-F = makeLMfilters()
-print(F.shape)
+if __name__ == '__main__':
+    F = makeLMfilters()
+    print(F.shape)
