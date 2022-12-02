@@ -100,8 +100,8 @@ def makeLMfilters():
 
     for i in range(len(scales)):
         F[:, :, count]   = gaussian2d(sup, scales[i])
-        F[:, :, count] = log2d(sup, scales[i])
-        F[:, :, count] = log2d(sup, 3 * scales[i])
+        F[:, :, count+1] = log2d(sup, scales[i])
+        F[:, :, count+2] = log2d(sup, 3 * scales[i])
         count = count + 3
 
     return F
